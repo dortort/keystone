@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { createIPCHandler } from 'electron-trpc/main'
 import { createWindow } from './window'
 import { appRouter } from './ipc/router'
@@ -11,6 +11,14 @@ app.whenReady().then(() => {
     router: appRouter,
     windows: [win],
     createContext,
+  })
+
+  ipcMain.handle('dialog:openDirectory', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory', 'createDirectory'],
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths[0]
   })
 
   app.on('activate', () => {

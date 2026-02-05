@@ -13,6 +13,11 @@ export function NewProjectDialog({ open, onClose, onCreate }: NewProjectDialogPr
   const [name, setName] = useState('')
   const [path, setPath] = useState('')
 
+  const handleBrowse = async () => {
+    const selected = await window.keystoneIPC.selectDirectory()
+    if (selected) setPath(selected)
+  }
+
   const handleCreate = () => {
     if (!name.trim() || !path.trim()) return
     onCreate(name.trim(), path.trim())
@@ -35,11 +40,16 @@ export function NewProjectDialog({ open, onClose, onCreate }: NewProjectDialogPr
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Location</label>
-          <Input
-            value={path}
-            onChange={(e) => setPath(e.target.value)}
-            placeholder="/Users/you/projects"
-          />
+          <div className="flex gap-2">
+            <div className="flex h-9 min-w-0 flex-1 items-center overflow-hidden rounded-md border border-gray-300 bg-gray-50 px-3 text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
+              <span className="truncate">
+                {path || 'Select a folder...'}
+              </span>
+            </div>
+            <Button variant="secondary" onClick={handleBrowse}>
+              Browse...
+            </Button>
+          </div>
         </div>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
