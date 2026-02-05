@@ -1,5 +1,16 @@
 # Keystone
 
+[![CI](https://github.com/dortort/keystone/actions/workflows/ci.yml/badge.svg)](https://github.com/dortort/keystone/actions/workflows/ci.yml)
+[![Build](https://github.com/dortort/keystone/actions/workflows/build.yml/badge.svg)](https://github.com/dortort/keystone/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+[![Electron](https://img.shields.io/badge/Electron-34-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-3-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+
 > AI-assisted software architecture documentation
 
 Keystone is an open-source Electron desktop application that streamlines the creation and maintenance of software architecture documentation through conversational AI. Generate, refine, and maintain **PRDs** (Product Requirements Documents), **TDDs** (Technical Design Documents), and **ADRs** (Architecture Decision Records) with AI assistance.
