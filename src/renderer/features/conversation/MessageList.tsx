@@ -10,9 +10,14 @@ interface MessageListProps {
 export function MessageList({ messages, streamingMessageId }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  // Find the content of the streaming message to trigger scroll on content changes
+  const streamingContent = streamingMessageId
+    ? messages.find((m) => m.id === streamingMessageId)?.content
+    : undefined
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, streamingContent])
 
   if (messages.length === 0) {
     return (
