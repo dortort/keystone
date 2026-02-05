@@ -9,6 +9,7 @@ interface ThreadState {
   setActiveThread: (id: string | null) => void
   addThread: (thread: Thread) => void
   addMessage: (threadId: string, message: Message) => void
+  addStreamingMessage: (threadId: string, messageId: string) => void
   appendToMessage: (threadId: string, messageId: string, chunk: string) => void
   setStreamingMessageId: (id: string | null) => void
   getActiveThread: () => Thread | undefined
@@ -28,6 +29,20 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
         t.id === threadId ? { ...t, messages: [...t.messages, message] } : t,
       ),
     })),
+  addStreamingMessage: (threadId, messageId) => {
+    const placeholderMessage: Message = {
+      id: messageId,
+      role: 'assistant',
+      content: '',
+      createdAt: new Date().toISOString(),
+    }
+    set((state) => ({
+      threads: state.threads.map((t) =>
+        t.id === threadId ? { ...t, messages: [...t.messages, placeholderMessage] } : t,
+      ),
+      streamingMessageId: messageId,
+    }))
+  },
   appendToMessage: (threadId, messageId, chunk) =>
     set((state) => ({
       threads: state.threads.map((t) =>
