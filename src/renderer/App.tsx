@@ -9,6 +9,7 @@ import { DocumentPanel } from './features/document/DocumentPanel'
 import { NewProjectDialog } from './features/project/NewProjectDialog'
 import { SettingsDialog } from './features/settings/SettingsDialog'
 import { ADRPromptDialog } from './features/document/ADRPromptDialog'
+import { EmptyProjectView } from './components/EmptyProjectView'
 import { useUIStore } from './stores/uiStore'
 import { useProjectStore } from './stores/projectStore'
 import { useThreadStore } from './stores/threadStore'
@@ -34,16 +35,21 @@ export function App() {
   const updateDocuments = useProjectStore((s) => s.updateDocuments)
   const updateThreads = useProjectStore((s) => s.updateThreads)
 
+  const threads = useThreadStore((s) => s.threads)
   const setThreads = useThreadStore((s) => s.setThreads)
   const addThread = useThreadStore((s) => s.addThread)
   const addMessage = useThreadStore((s) => s.addMessage)
   const addStreamingMessage = useThreadStore((s) => s.addStreamingMessage)
   const setStreamingMessageId = useThreadStore((s) => s.setStreamingMessageId)
 
+  const documents = useDocumentStore((s) => s.documents)
   const setDocuments = useDocumentStore((s) => s.setDocuments)
   const addDocument = useDocumentStore((s) => s.addDocument)
 
   const loadSettings = useSettingsStore((s) => s.loadSettings)
+
+  // Check if the active project has any content
+  const hasContent = threads.length > 0 || documents.length > 0
 
   // Listen for AI streaming chunks and completion via Electron IPC
   useEffect(() => {
@@ -346,16 +352,24 @@ export function App() {
           {sidebarOpen && <Sidebar onSelectProject={handleSelectProject} />}
 
           {activeProject ? (
-            <ResizablePanel
-              left={
-                <ConversationPanel
-                  onSendMessage={handleSendMessage}
-                  onNewThread={handleNewThread}
-                  onBranch={handleBranchThread}
-                />
-              }
-              right={<DocumentPanel onInquire={handleInquire} onRefine={handleRefine} />}
-            />
+            hasContent ? (
+              <ResizablePanel
+                left={
+                  <ConversationPanel
+                    onSendMessage={handleSendMessage}
+                    onNewThread={handleNewThread}
+                    onBranch={handleBranchThread}
+                  />
+                }
+                right={<DocumentPanel onInquire={handleInquire} onRefine={handleRefine} />}
+              />
+            ) : (
+              <EmptyProjectView
+                projectName={activeProject.name}
+                onNewThread={handleNewThread}
+                onOpenSettings={() => setShowSettings(true)}
+              />
+            )
           ) : (
             <div className="flex flex-1 items-center justify-center">
               <div className="text-center">
