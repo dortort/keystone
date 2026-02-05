@@ -65,8 +65,8 @@ export class OpenAIAdapter extends BaseLLMClient {
             const parsed = JSON.parse(data)
             const content = parsed.choices?.[0]?.delta?.content
             if (content) yield content
-          } catch {
-            // Skip malformed JSON
+          } catch (e) {
+            console.warn('Failed to parse SSE chunk:', e)
           }
         }
       }

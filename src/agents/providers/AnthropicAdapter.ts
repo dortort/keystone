@@ -67,8 +67,8 @@ export class AnthropicAdapter extends BaseLLMClient {
             if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
               yield parsed.delta.text
             }
-          } catch {
-            // Skip malformed JSON
+          } catch (e) {
+            console.warn('Failed to parse SSE chunk:', e)
           }
         }
       }

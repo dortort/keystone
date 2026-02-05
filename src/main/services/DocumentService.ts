@@ -4,6 +4,7 @@ import type Database from 'better-sqlite3'
 import type { Document, DocumentVersion } from '@shared/types'
 import { generateDocumentId } from '@shared/utils/id'
 import { now } from '@shared/utils/date'
+import { DocumentNotFoundError } from '@shared/errors'
 
 export class DocumentService {
   constructor(private db: Database.Database) {}
@@ -67,7 +68,7 @@ export class DocumentService {
     } | undefined
 
     if (!row) {
-      throw new Error(`Document not found: ${id}`)
+      throw new DocumentNotFoundError(id)
     }
 
     const filePath = join(projectPath, 'documents', row.filename)
@@ -95,7 +96,7 @@ export class DocumentService {
     } | undefined
 
     if (!row) {
-      throw new Error(`Document not found: ${id}`)
+      throw new DocumentNotFoundError(id)
     }
 
     const filePath = join(projectPath, 'documents', row.filename)

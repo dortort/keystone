@@ -4,6 +4,7 @@ import type Database from 'better-sqlite3'
 import type { Project, DocumentRef, ThreadRef } from '@shared/types'
 import { generateId } from '@shared/utils/id'
 import { now } from '@shared/utils/date'
+import { ProjectNotFoundError } from '@shared/errors'
 
 interface ProjectManifest {
   id: string
@@ -50,7 +51,7 @@ export class ProjectService {
   open(projectPath: string): Project {
     const manifestPath = join(projectPath, 'keystone.json')
     if (!existsSync(manifestPath)) {
-      throw new Error(`No keystone.json found at ${projectPath}`)
+      throw new ProjectNotFoundError(projectPath)
     }
 
     const manifest: ProjectManifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))

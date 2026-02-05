@@ -17,6 +17,6 @@
       "@shared/*": ["./src/shared/*"]
     }
   },
-  "include": ["src/renderer/**/*", "src/shared/**/*", "src/main/**/*"],
+  "include": ["src/renderer/**/*", "src/shared/**/*", "src/main/**/*", "src/agents/**/*"],
   "exclude": ["**/*.test.ts", "**/*.test.tsx"]
 }

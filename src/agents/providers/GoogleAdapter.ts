@@ -35,11 +35,14 @@ export class GoogleAdapter extends BaseLLMClient {
       }
     }
 
-    const url = `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse&key=${this.apiKey}`
+    const url = `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': this.apiKey,
+      },
       body: JSON.stringify(body),
     })
 
@@ -69,8 +72,8 @@ export class GoogleAdapter extends BaseLLMClient {
             const parsed = JSON.parse(data)
             const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text
             if (text) yield text
-          } catch {
-            // Skip malformed JSON
+          } catch (e) {
+            console.warn('Failed to parse SSE chunk:', e)
           }
         }
       }

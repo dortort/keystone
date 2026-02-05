@@ -121,6 +121,46 @@ export class ThreadService {
     this.db.prepare("UPDATE threads SET status = 'archived', updated_at = ? WHERE id = ?").run(now(), threadId)
   }
 
+  branch(threadId: string, projectPath: string, fromMessageId: string): Thread {
+    const sourceThread = this.get(threadId, projectPath)
+    if (!sourceThread) {
+      throw new Error(`Thread not found: ${threadId}`)
+    }
+
+    const newId = generateThreadId()
+    const timestamp = now()
+    const title = `${sourceThread.title} (branched)`
+
+    // Create new thread in database
+    this.db
+      .prepare(
+        'INSERT INTO threads (id, project_id, document_id, parent_thread_id, title, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      )
+      .run(newId, sourceThread.projectId, sourceThread.documentId ?? null, threadId, title, 'active', timestamp, timestamp)
+
+    // Copy messages up to and including fromMessageId
+    const messageIndex = sourceThread.messages.findIndex((m) => m.id === fromMessageId)
+    const copiedMessages = messageIndex >= 0 ? sourceThread.messages.slice(0, messageIndex + 1) : []
+
+    const newThread: Thread = {
+      id: newId,
+      projectId: sourceThread.projectId,
+      parentThreadId: threadId,
+      documentId: sourceThread.documentId,
+      selectionRange: sourceThread.selectionRange,
+      title,
+      messages: copiedMessages,
+      status: 'active',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+
+    // Save thread file
+    this.saveThreadFile(projectPath, newThread)
+
+    return newThread
+  }
+
   listByProject(projectId: string): Array<{ id: string; title: string; status: string; documentId: string | null; updatedAt: string }> {
     return this.db
       .prepare(

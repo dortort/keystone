@@ -6,6 +6,7 @@ export class Critic extends BaseAgent {
   readonly id = 'critic'
   readonly name = 'Critic / Reviewer'
   readonly specialty = 'Document review, inconsistency detection'
+  readonly priority = 80
   protected readonly systemPrompt = CRITIC_PROMPT
 
   canHandle(request: AgentRequest): boolean {

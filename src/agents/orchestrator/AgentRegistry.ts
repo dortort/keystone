@@ -16,12 +16,13 @@ export class AgentRegistry {
   }
 
   findBestAgent(request: import('@shared/types/agent').AgentRequest): BaseAgent | null {
-    // Find agents that can handle this request, return the first match
-    for (const agent of this.agents.values()) {
-      if (agent.canHandle(request)) {
-        return agent
-      }
-    }
-    return null
+    // Find agents that can handle this request and sort by priority (higher = more specific)
+    const candidates = Array.from(this.agents.values()).filter((agent) => agent.canHandle(request))
+
+    if (candidates.length === 0) return null
+
+    // Sort by priority descending and return the highest priority agent
+    candidates.sort((a, b) => b.priority - a.priority)
+    return candidates[0]
   }
 }

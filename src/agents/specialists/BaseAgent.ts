@@ -6,6 +6,7 @@ export abstract class BaseAgent {
   abstract readonly id: string
   abstract readonly name: string
   abstract readonly specialty: string
+  abstract readonly priority: number
   protected abstract readonly systemPrompt: string
 
   abstract canHandle(request: AgentRequest): boolean

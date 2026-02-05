@@ -6,6 +6,7 @@ export class TechnicalArchitect extends BaseAgent {
   readonly id = 'technical-architect'
   readonly name = 'Technical Architect'
   readonly specialty = 'System design, architecture, trade-off analysis'
+  readonly priority = 70
   protected readonly systemPrompt = ARCHITECT_PROMPT
 
   canHandle(request: AgentRequest): boolean {

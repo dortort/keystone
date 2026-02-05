@@ -58,4 +58,16 @@ export const threadRouter = router({
     .query(({ input, ctx }) => {
       return ctx.threadService.listByProject(input.projectId)
     }),
+
+  branch: publicProcedure
+    .input(
+      z.object({
+        threadId: z.string(),
+        projectPath: z.string(),
+        fromMessageId: z.string(),
+      }),
+    )
+    .mutation(({ input, ctx }) => {
+      return ctx.threadService.branch(input.threadId, input.projectPath, input.fromMessageId)
+    }),
 })
