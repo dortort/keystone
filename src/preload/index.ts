@@ -21,5 +21,6 @@ process.once('loaded', () => {
       ipcRenderer.removeAllListeners('ai:chunk')
       ipcRenderer.removeAllListeners('ai:done')
     },
+    selectDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
   })
 })
