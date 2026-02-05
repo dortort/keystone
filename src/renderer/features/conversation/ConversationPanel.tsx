@@ -5,9 +5,10 @@ import { useThreadStore } from '../../stores/threadStore'
 interface ConversationPanelProps {
   onSendMessage: (content: string) => void
   onNewThread: () => void
+  onBranch?: (messageId: string) => void
 }
 
-export function ConversationPanel({ onSendMessage, onNewThread }: ConversationPanelProps) {
+export function ConversationPanel({ onSendMessage, onNewThread, onBranch }: ConversationPanelProps) {
   const threads = useThreadStore((s) => s.threads)
   const activeThreadId = useThreadStore((s) => s.activeThreadId)
   const streamingMessageId = useThreadStore((s) => s.streamingMessageId)
@@ -38,6 +39,7 @@ export function ConversationPanel({ onSendMessage, onNewThread }: ConversationPa
             streamingMessageId={streamingMessageId}
             isStreaming={!!streamingMessageId}
             onSendMessage={onSendMessage}
+            onBranch={onBranch}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-gray-400 dark:text-gray-500">

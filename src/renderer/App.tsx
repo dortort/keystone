@@ -166,6 +166,26 @@ export function App() {
     [addMessage, addStreamingMessage, setStreamingMessageId],
   )
 
+  const handleBranchThread = useCallback(
+    async (messageId: string) => {
+      const activeThreadId = useThreadStore.getState().activeThreadId
+      const activeProj = useProjectStore.getState().activeProject
+      if (!activeThreadId || !activeProj) return
+
+      try {
+        const newThread = await trpc.thread.branch.mutate({
+          threadId: activeThreadId,
+          projectPath: activeProj.path,
+          fromMessageId: messageId,
+        })
+        addThread(newThread)
+      } catch (err) {
+        console.error('Failed to branch thread:', err)
+      }
+    },
+    [addThread],
+  )
+
   const handleInquire = useCallback(
     async (selectedText: string) => {
       if (!activeProject) return
@@ -331,6 +351,7 @@ export function App() {
                 <ConversationPanel
                   onSendMessage={handleSendMessage}
                   onNewThread={handleNewThread}
+                  onBranch={handleBranchThread}
                 />
               }
               right={<DocumentPanel onInquire={handleInquire} onRefine={handleRefine} />}

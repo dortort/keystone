@@ -1,6 +1,8 @@
+import { useCallback } from 'react'
 import { DocumentTabs } from './DocumentTabs'
 import { MarkdownPreview } from './MarkdownPreview'
 import { DocumentOutline } from './DocumentOutline'
+import { InlineComments } from './InlineComments'
 import { useDocumentStore } from '../../stores/documentStore'
 
 interface DocumentPanelProps {
@@ -14,6 +16,11 @@ export function DocumentPanel({ onInquire, onRefine }: DocumentPanelProps) {
   const setActiveDocument = useDocumentStore((s) => s.setActiveDocument)
 
   const activeDocument = documents.find((d) => d.id === activeDocumentId)
+
+  const handleClickComment = useCallback((commentId: string) => {
+    // Placeholder: could scroll to comment range or open a detail view
+    console.log('Comment clicked:', commentId)
+  }, [])
 
   return (
     <div className="flex h-full flex-col">
@@ -29,6 +36,10 @@ export function DocumentPanel({ onInquire, onRefine }: DocumentPanelProps) {
               content={activeDocument.content}
               onInquire={onInquire}
               onRefine={onRefine}
+            />
+            <InlineComments
+              comments={activeDocument.comments}
+              onClickComment={handleClickComment}
             />
             <DocumentOutline content={activeDocument.content} />
           </>
