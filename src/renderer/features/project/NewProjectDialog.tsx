@@ -18,7 +18,8 @@ export function NewProjectDialog({ open, onClose, onCreate }: NewProjectDialogPr
     if (selected) setPath(selected)
   }
 
-  const handleCreate = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
     if (!name.trim() || !path.trim()) return
     onCreate(name.trim(), path.trim())
     setName('')
@@ -28,7 +29,7 @@ export function NewProjectDialog({ open, onClose, onCreate }: NewProjectDialogPr
 
   return (
     <Dialog open={open} onClose={onClose} title="New Project">
-      <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-medium">Project Name</label>
           <Input
@@ -46,20 +47,20 @@ export function NewProjectDialog({ open, onClose, onCreate }: NewProjectDialogPr
                 {path || 'Select a folder...'}
               </span>
             </div>
-            <Button variant="secondary" onClick={handleBrowse}>
+            <Button type="button" variant="secondary" onClick={handleBrowse}>
               Browse...
             </Button>
           </div>
         </div>
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>
+          <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} disabled={!name.trim() || !path.trim()}>
+          <Button type="submit" disabled={!name.trim() || !path.trim()}>
             Create Project
           </Button>
         </div>
-      </div>
+      </form>
     </Dialog>
   )
 }
