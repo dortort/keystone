@@ -5,6 +5,9 @@ import { RequirementsAnalyst } from '../specialists/RequirementsAnalyst'
 import { TechnicalArchitect } from '../specialists/TechnicalArchitect'
 import { DecisionAnalyst } from '../specialists/DecisionAnalyst'
 import { Critic } from '../specialists/Critic'
+import { UXAdvisor } from '../specialists/UXAdvisor'
+import { SecurityAnalyst } from '../specialists/SecurityAnalyst'
+import { CoherenceChecker } from '../specialists/CoherenceChecker'
 import { SHARED_CONTEXT } from '../prompts/system'
 import type { ChatMessage } from '@shared/types/provider'
 
@@ -19,6 +22,9 @@ export class Orchestrator {
     this.registry.register(new TechnicalArchitect())
     this.registry.register(new DecisionAnalyst())
     this.registry.register(new Critic())
+    this.registry.register(new UXAdvisor())
+    this.registry.register(new SecurityAnalyst())
+    this.registry.register(new CoherenceChecker())
   }
 
   async *process(request: AgentRequest, llm: BaseLLMClient): AsyncIterable<AgentResponse> {
