@@ -10,10 +10,16 @@ export default defineConfig({
         '@shared': resolve('src/shared'),
         '@agents': resolve('src/agents')
       }
+    },
+    build: {
+      outDir: 'dist/main'
     }
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      outDir: 'dist/preload'
+    }
   },
   renderer: {
     resolve: {
@@ -22,6 +28,9 @@ export default defineConfig({
         '@shared': resolve('src/shared')
       }
     },
-    plugins: [react()]
+    plugins: [react()],
+    build: {
+      outDir: 'dist/renderer'
+    }
   }
 })
