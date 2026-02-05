@@ -5,9 +5,10 @@ import { MessageBubble } from './MessageBubble'
 interface MessageListProps {
   messages: Message[]
   streamingMessageId: string | null
+  onBranch?: (messageId: string) => void
 }
 
-export function MessageList({ messages, streamingMessageId }: MessageListProps) {
+export function MessageList({ messages, streamingMessageId, onBranch }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Find the content of the streaming message to trigger scroll on content changes
@@ -39,6 +40,7 @@ export function MessageList({ messages, streamingMessageId }: MessageListProps) 
           key={message.id}
           message={message}
           isStreaming={message.id === streamingMessageId}
+          onBranch={onBranch}
         />
       ))}
       <div ref={bottomRef} />

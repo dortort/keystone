@@ -8,12 +8,13 @@ interface ChatViewProps {
   streamingMessageId: string | null
   isStreaming: boolean
   onSendMessage: (content: string) => void
+  onBranch?: (messageId: string) => void
 }
 
-export function ChatView({ messages, streamingMessageId, isStreaming, onSendMessage }: ChatViewProps) {
+export function ChatView({ messages, streamingMessageId, isStreaming, onSendMessage, onBranch }: ChatViewProps) {
   return (
     <div className="flex h-full flex-col">
-      <MessageList messages={messages} streamingMessageId={streamingMessageId} />
+      <MessageList messages={messages} streamingMessageId={streamingMessageId} onBranch={onBranch} />
       {isStreaming && !streamingMessageId && <StreamingIndicator />}
       <MessageInput onSend={onSendMessage} disabled={isStreaming} />
     </div>
