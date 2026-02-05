@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Dialog } from '../../components/ui/Dialog'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
@@ -16,7 +17,13 @@ const providers: Array<{ type: ProviderType; name: string; placeholder: string }
 ]
 
 export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
-  const { apiKeys, activeProvider, setApiKey, setActiveProvider } = useSettingsStore()
+  const { apiKeys, activeProvider, setApiKey, setActiveProvider, loadSettings } = useSettingsStore()
+
+  useEffect(() => {
+    if (open) {
+      loadSettings()
+    }
+  }, [open, loadSettings])
 
   return (
     <Dialog open={open} onClose={onClose} title="Settings">
