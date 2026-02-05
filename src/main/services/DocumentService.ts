@@ -158,6 +158,57 @@ export class DocumentService {
     return versions
   }
 
+  rollback(id: string, projectPath: string, version: number): Document {
+    const row = this.db.prepare('SELECT * FROM documents WHERE id = ?').get(id) as {
+      id: string
+      project_id: string
+      type: string
+      title: string
+      filename: string
+      version: number
+      created_at: string
+      updated_at: string
+    } | undefined
+
+    if (!row) {
+      throw new DocumentNotFoundError(id)
+    }
+
+    if (version >= row.version) {
+      throw new Error(`Cannot rollback to version ${version}: current version is ${row.version}`)
+    }
+
+    // Read the historical version file
+    const historyFile = join(projectPath, '.keystone', 'history', `${id}_v${version}.md`)
+    if (!existsSync(historyFile)) {
+      throw new Error(`Version ${version} not found in history for document ${id}`)
+    }
+
+    const historicalContent = readFileSync(historyFile, 'utf-8')
+
+    // Save current version to history before overwriting
+    const currentFilePath = join(projectPath, 'documents', row.filename)
+    if (existsSync(currentFilePath)) {
+      const historyDir = join(projectPath, '.keystone', 'history')
+      if (!existsSync(historyDir)) {
+        mkdirSync(historyDir, { recursive: true })
+      }
+      copyFileSync(currentFilePath, join(historyDir, `${id}_v${row.version}.md`))
+    }
+
+    // Write the historical content as the current file
+    writeFileSync(currentFilePath, historicalContent, 'utf-8')
+
+    // Bump version number in the database
+    const newVersion = row.version + 1
+    const timestamp = now()
+    this.db
+      .prepare('UPDATE documents SET version = ?, updated_at = ? WHERE id = ?')
+      .run(newVersion, timestamp, id)
+
+    return this.get(id, projectPath)
+  }
+
   listByProject(projectId: string): Array<{ id: string; type: string; title: string; filename: string }> {
     return this.db
       .prepare('SELECT id, type, title, filename FROM documents WHERE project_id = ? ORDER BY type, title')
