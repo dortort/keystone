@@ -17,6 +17,9 @@ export { RequirementsAnalyst } from './specialists/RequirementsAnalyst'
 export { TechnicalArchitect } from './specialists/TechnicalArchitect'
 export { DecisionAnalyst } from './specialists/DecisionAnalyst'
 export { Critic } from './specialists/Critic'
+export { UXAdvisor } from './specialists/UXAdvisor'
+export { SecurityAnalyst } from './specialists/SecurityAnalyst'
+export { CoherenceChecker } from './specialists/CoherenceChecker'
 
 // Prompts
 export {
@@ -25,4 +28,7 @@ export {
   ARCHITECT_PROMPT,
   DECISION_PROMPT,
   CRITIC_PROMPT,
+  UX_ADVISOR_PROMPT,
+  SECURITY_PROMPT,
+  COHERENCE_PROMPT,
 } from './prompts/system'
