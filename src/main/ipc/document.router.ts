@@ -33,6 +33,12 @@ export const documentRouter = router({
       return ctx.documentService.getHistory(input.id, input.projectPath)
     }),
 
+  rollback: publicProcedure
+    .input(z.object({ id: z.string(), projectPath: z.string(), version: z.number().int().positive() }))
+    .mutation(({ input, ctx }) => {
+      return ctx.documentService.rollback(input.id, input.projectPath, input.version)
+    }),
+
   listByProject: publicProcedure
     .input(z.object({ projectId: z.string() }))
     .query(({ input, ctx }) => {

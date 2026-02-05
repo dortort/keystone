@@ -1,5 +1,6 @@
 import type Database from 'better-sqlite3'
 import { up as initial } from './001_initial'
+import { up as fts5 } from './002_fts5'
 
 interface Migration {
   version: number
@@ -9,6 +10,7 @@ interface Migration {
 
 const migrations: Migration[] = [
   { version: 1, name: '001_initial', up: initial },
+  { version: 2, name: '002_fts5', up: fts5 },
 ]
 
 export function runMigrations(db: Database.Database): void {
