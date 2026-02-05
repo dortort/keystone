@@ -13,8 +13,9 @@ app.whenReady().then(() => {
     createContext,
   })
 
-  ipcMain.handle('dialog:openDirectory', async () => {
-    const result = await dialog.showOpenDialog({
+  ipcMain.handle('dialog:openDirectory', async (event) => {
+    const parentWindow = BrowserWindow.fromWebContents(event.sender)
+    const result = await dialog.showOpenDialog(parentWindow!, {
       properties: ['openDirectory', 'createDirectory'],
     })
     if (result.canceled || result.filePaths.length === 0) return null
