@@ -21,8 +21,9 @@ export function TitleBar({ onOpenSettings, onNewProject }: TitleBarProps) {
           className="rounded p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
           style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 12h18M3 6h18M3 18h18" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="9" y1="3" x2="9" y2="21" />
           </svg>
         </button>
         <span className="text-sm font-semibold">Keystone</span>
