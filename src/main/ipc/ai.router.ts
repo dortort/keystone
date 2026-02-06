@@ -144,16 +144,29 @@ export const aiRouter = router({
     .input(
       z.object({
         type: z.enum(['openai', 'anthropic', 'google']),
-        apiKey: z.string().min(1),
+        apiKey: z.string().min(1).optional(),
+        authMethod: z.enum(['apiKey', 'oauth']).optional(),
+        oauthToken: z.string().optional(),
+        accountId: z.string().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      // Configure the in-memory provider
-      ctx.providerManager.configure({ type: input.type, apiKey: input.apiKey })
-      ctx.providerManager.setActive(input.type)
+      const authMethod = input.authMethod || 'apiKey'
 
-      // Persist the API key and active provider selection
-      ctx.settingsService.setApiKey(input.type, input.apiKey)
+      if (authMethod === 'oauth' && input.oauthToken) {
+        ctx.providerManager.configure({
+          type: input.type,
+          authMethod: 'oauth',
+          oauthToken: input.oauthToken,
+          accountId: input.accountId,
+        })
+      } else if (input.apiKey) {
+        ctx.providerManager.configure({ type: input.type, authMethod: 'apiKey', apiKey: input.apiKey })
+        ctx.settingsService.setApiKey(input.type, input.apiKey)
+        ctx.settingsService.setAuthMethod(input.type, 'apiKey')
+      }
+
+      ctx.providerManager.setActive(input.type)
       ctx.settingsService.setActiveProvider(input.type)
 
       return {

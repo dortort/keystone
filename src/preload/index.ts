@@ -22,5 +22,14 @@ process.once('loaded', () => {
       ipcRenderer.removeAllListeners('ai:done')
     },
     selectDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
+    onOAuthStatus: (callback: (data: { state: string; provider?: string; email?: string; error?: string }) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, data: { state: string; provider?: string; email?: string; error?: string }) =>
+        callback(data)
+      ipcRenderer.on('oauth:status', handler)
+      return handler
+    },
+    removeOAuthListeners: () => {
+      ipcRenderer.removeAllListeners('oauth:status')
+    },
   })
 })

@@ -6,6 +6,7 @@ import type { ThreadService } from '../services/ThreadService'
 import type { ProviderManager } from '../../agents/providers/ProviderManager'
 import type { Orchestrator } from '../../agents/orchestrator/Orchestrator'
 import type { SettingsService } from '../services/SettingsService'
+import type { OAuthService } from '../services/OAuthService'
 
 export interface Context {
   db: DatabaseService
@@ -15,6 +16,7 @@ export interface Context {
   providerManager: ProviderManager
   orchestrator: Orchestrator
   settingsService: SettingsService
+  oauthService: OAuthService
 }
 
 const t = initTRPC.context<Context>().create()

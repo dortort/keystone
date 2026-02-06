@@ -5,6 +5,8 @@ import * as path from 'path'
 interface SettingsData {
   activeProvider: string | null
   apiKeys: Record<string, string> // stored as base64-encoded encrypted strings
+  oauthTokens: Record<string, string> // stored as base64-encoded encrypted JSON strings
+  authMethods: Record<string, string> // 'apiKey' | 'oauth'
 }
 
 export class SettingsService {
@@ -21,6 +23,9 @@ export class SettingsService {
     }
 
     this.settings = this.loadSettings()
+    // Migrate older settings files that lack OAuth fields
+    if (!this.settings.oauthTokens) this.settings.oauthTokens = {}
+    if (!this.settings.authMethods) this.settings.authMethods = {}
   }
 
   private loadSettings(): SettingsData {
@@ -35,7 +40,9 @@ export class SettingsService {
 
     return {
       activeProvider: null,
-      apiKeys: {}
+      apiKeys: {},
+      oauthTokens: {},
+      authMethods: {},
     }
   }
 
@@ -101,10 +108,67 @@ export class SettingsService {
   }
 
   getConfiguredProviders(): string[] {
-    return Object.keys(this.settings.apiKeys)
+    return [...new Set([
+      ...Object.keys(this.settings.apiKeys),
+      ...Object.keys(this.settings.oauthTokens),
+    ])]
   }
 
   hasApiKey(provider: string): boolean {
     return !!this.settings.apiKeys[provider]
+  }
+
+  getOAuthTokens(provider: string): import('@shared/types/provider').OAuthTokens | null {
+    const encrypted = this.settings.oauthTokens[provider]
+    if (!encrypted) return null
+
+    try {
+      let json: string
+      if (this.encryptionAvailable) {
+        const buffer = Buffer.from(encrypted, 'base64')
+        json = safeStorage.decryptString(buffer)
+      } else {
+        json = encrypted
+      }
+      return JSON.parse(json)
+    } catch (error) {
+      console.error(`Failed to decrypt OAuth tokens for ${provider}:`, error)
+      return null
+    }
+  }
+
+  setOAuthTokens(provider: string, tokens: import('@shared/types/provider').OAuthTokens): void {
+    try {
+      const json = JSON.stringify(tokens)
+      if (this.encryptionAvailable) {
+        const encrypted = safeStorage.encryptString(json)
+        this.settings.oauthTokens[provider] = encrypted.toString('base64')
+      } else {
+        this.settings.oauthTokens[provider] = json
+      }
+      this.saveSettings()
+    } catch (error) {
+      console.error(`Failed to encrypt and save OAuth tokens for ${provider}:`, error)
+      throw error
+    }
+  }
+
+  deleteOAuthTokens(provider: string): void {
+    delete this.settings.oauthTokens[provider]
+    delete this.settings.authMethods[provider]
+    this.saveSettings()
+  }
+
+  getAuthMethod(provider: string): 'apiKey' | 'oauth' {
+    return (this.settings.authMethods[provider] as 'apiKey' | 'oauth') || 'apiKey'
+  }
+
+  setAuthMethod(provider: string, method: 'apiKey' | 'oauth'): void {
+    this.settings.authMethods[provider] = method
+    this.saveSettings()
+  }
+
+  getOAuthConfiguredProviders(): string[] {
+    return Object.keys(this.settings.oauthTokens)
   }
 }

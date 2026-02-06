@@ -1,13 +1,41 @@
 import { BaseLLMClient } from './BaseLLMClient'
 import type { ChatMessage, ChatOptions } from '@shared/types/provider'
 
+interface GoogleAuthApiKey {
+  apiKey: string
+}
+
+interface GoogleAuthOAuth {
+  oauthToken: string
+}
+
+type GoogleAuth = GoogleAuthApiKey | GoogleAuthOAuth
+
 export class GoogleAdapter extends BaseLLMClient {
-  private apiKey: string
+  private auth: GoogleAuth
   private baseUrl = 'https://generativelanguage.googleapis.com/v1beta'
 
-  constructor(apiKey: string) {
+  constructor(auth: string | GoogleAuth) {
     super()
-    this.apiKey = apiKey
+    this.auth = typeof auth === 'string' ? { apiKey: auth } : auth
+  }
+
+  updateOAuthToken(token: string): void {
+    this.auth = { oauthToken: token }
+  }
+
+  private getAuthHeaders(): Record<string, string> {
+    if ('oauthToken' in this.auth) {
+      return { Authorization: `Bearer ${this.auth.oauthToken}` }
+    }
+    return { 'x-goog-api-key': this.auth.apiKey }
+  }
+
+  private getUrl(model: string): string {
+    const base = `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`
+    // When using API key (not OAuth), append key as query param is not needed
+    // since we send it via header. Just return base URL.
+    return base
   }
 
   async *chat(messages: ChatMessage[], options?: ChatOptions): AsyncIterable<string> {
@@ -35,13 +63,13 @@ export class GoogleAdapter extends BaseLLMClient {
       }
     }
 
-    const url = `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`
+    const url = this.getUrl(model)
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-goog-api-key': this.apiKey,
+        ...this.getAuthHeaders(),
       },
       body: JSON.stringify(body),
     })
