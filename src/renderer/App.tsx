@@ -4,6 +4,8 @@ import { TitleBar } from './components/TitleBar'
 import { Sidebar } from './components/Sidebar'
 import { StatusBar } from './components/StatusBar'
 import { ResizablePanel } from './components/ui/ResizablePanel'
+import { Spinner } from './components/ui/Spinner'
+import { ToastContainer, useToastStore } from './components/ui/Toast'
 import { ConversationPanel } from './features/conversation/ConversationPanel'
 import { DocumentPanel } from './features/document/DocumentPanel'
 import { NewProjectDialog } from './features/project/NewProjectDialog'
@@ -16,17 +18,21 @@ import { useThreadStore } from './stores/threadStore'
 import { useDocumentStore } from './stores/documentStore'
 import { useSettingsStore } from './stores/settingsStore'
 import { trpc } from './lib/trpc'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { ADR_TEMPLATE } from '@shared/constants'
 
 export function App() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const [showNewProject, setShowNewProject] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [loadingProject, setLoadingProject] = useState(false)
   const [pendingPivot, setPendingPivot] = useState<{
     previousDecision: string
     newDecision: string
     threadId: string
   } | null>(null)
+
+  const addToast = useToastStore((s) => s.addToast)
 
   const activeProject = useProjectStore((s) => s.activeProject)
   const setProjects = useProjectStore((s) => s.setProjects)
@@ -47,6 +53,13 @@ export function App() {
   const addDocument = useDocumentStore((s) => s.addDocument)
 
   const loadSettings = useSettingsStore((s) => s.loadSettings)
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onNewThread: () => { if (activeProject) handleNewThread() },
+    onOpenSettings: () => setShowSettings(true),
+    onNewProject: () => setShowNewProject(true),
+  })
 
   // Check if the active project has any content
   const hasContent = threads.length > 0 || documents.length > 0
@@ -79,22 +92,25 @@ export function App() {
         setProjects(projects)
       } catch (err) {
         console.error('Failed to load projects:', err)
+        addToast('Failed to load projects. Please restart the app.')
       }
     }
     loadProjects()
     loadSettings()
-  }, [setProjects, loadSettings])
+  }, [setProjects, loadSettings, addToast])
 
   const handleCreateProject = useCallback(
     async (name: string, path: string) => {
       try {
         const project = await trpc.project.create.mutate({ name, path })
         addProject(project)
+        addToast(`Project "${name}" created successfully.`, 'success')
       } catch (err) {
         console.error('Failed to create project:', err)
+        addToast('Failed to create project. Please try again.')
       }
     },
-    [addProject],
+    [addProject, addToast],
   )
 
   const handleNewThread = useCallback(async () => {
@@ -107,8 +123,9 @@ export function App() {
       addThread(thread)
     } catch (err) {
       console.error('Failed to create thread:', err)
+      addToast('Failed to create thread. Please try again.')
     }
-  }, [activeProject, addThread])
+  }, [activeProject, addThread, addToast])
 
   const handleSendMessage = useCallback(
     async (content: string) => {
@@ -167,9 +184,10 @@ export function App() {
           content: 'Failed to get a response. Please try again.',
           createdAt: new Date().toISOString(),
         })
+        addToast('Failed to get AI response. Check your provider settings.')
       }
     },
-    [addMessage, addStreamingMessage, setStreamingMessageId],
+    [addMessage, addStreamingMessage, setStreamingMessageId, addToast],
   )
 
   const handleBranchThread = useCallback(
@@ -185,11 +203,13 @@ export function App() {
           fromMessageId: messageId,
         })
         addThread(newThread)
+        addToast('Conversation branched successfully.', 'success')
       } catch (err) {
         console.error('Failed to branch thread:', err)
+        addToast('Failed to branch conversation. Please try again.')
       }
     },
-    [addThread],
+    [addThread, addToast],
   )
 
   const handleInquire = useCallback(
@@ -207,9 +227,10 @@ export function App() {
         addThread(thread)
       } catch (err) {
         console.error('Failed to create inquiry thread:', err)
+        addToast('Failed to create inquiry. Please try again.')
       }
     },
-    [activeProject, addThread],
+    [activeProject, addThread, addToast],
   )
 
   const handleRefine = useCallback(
@@ -227,13 +248,15 @@ export function App() {
         addThread(thread)
       } catch (err) {
         console.error('Failed to create refinement thread:', err)
+        addToast('Failed to create refinement. Please try again.')
       }
     },
-    [activeProject, addThread],
+    [activeProject, addThread, addToast],
   )
 
   const handleSelectProject = useCallback(
     async (_path: string) => {
+      setLoadingProject(true)
       try {
         // Open project via backend (loads full project with doc/thread refs)
         const project = await trpc.project.open.mutate({ path: _path })
@@ -275,9 +298,12 @@ export function App() {
         setDocuments(fullDocs)
       } catch (err) {
         console.error('Failed to select project:', err)
+        addToast('Failed to open project. Please try again.')
+      } finally {
+        setLoadingProject(false)
       }
     },
-    [setActiveProject, updateThreads, updateDocuments, setThreads, setDocuments],
+    [setActiveProject, updateThreads, updateDocuments, setThreads, setDocuments, addToast],
   )
 
   const handleCreateADR = useCallback(async () => {
@@ -335,10 +361,12 @@ export function App() {
 
       // Clear pending pivot
       setPendingPivot(null)
+      addToast('ADR created successfully.', 'success')
     } catch (err) {
       console.error('Failed to create ADR:', err)
+      addToast('Failed to create ADR. Please try again.')
     }
-  }, [pendingPivot, activeProject, addDocument, updateDocuments])
+  }, [pendingPivot, activeProject, addDocument, updateDocuments, addToast])
 
   return (
     <ErrorBoundary>
@@ -351,7 +379,14 @@ export function App() {
         <div className="flex flex-1 overflow-hidden">
           {sidebarOpen && <Sidebar onSelectProject={handleSelectProject} />}
 
-          {activeProject ? (
+          {loadingProject ? (
+            <div className="flex flex-1 items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <Spinner size="lg" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">Loading project...</p>
+              </div>
+            </div>
+          ) : activeProject ? (
             hasContent ? (
               <ResizablePanel
                 left={
@@ -389,6 +424,8 @@ export function App() {
         </div>
 
         <StatusBar />
+
+        <ToastContainer />
 
         <NewProjectDialog
           open={showNewProject}
