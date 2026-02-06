@@ -1,4 +1,5 @@
 import { Dialog } from '../../components/ui/Dialog'
+import { Button } from '../../components/ui/Button'
 
 interface ADRPromptDialogProps {
   open: boolean
@@ -30,18 +31,12 @@ export function ADRPromptDialog({
         </div>
 
         <div className="flex justify-end gap-2">
-          <button
-            onClick={onDismiss}
-            className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-          >
+          <Button variant="secondary" onClick={onDismiss}>
             Dismiss
-          </button>
-          <button
-            onClick={onCreateADR}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-          >
+          </Button>
+          <Button onClick={onCreateADR}>
             Create ADR
-          </button>
+          </Button>
         </div>
       </div>
     </Dialog>
