@@ -1,13 +1,45 @@
 import { BaseLLMClient } from './BaseLLMClient'
 import type { ChatMessage, ChatOptions } from '@shared/types/provider'
 
+interface OpenAIAuthApiKey {
+  apiKey: string
+}
+
+interface OpenAIAuthOAuth {
+  oauthToken: string
+  accountId?: string
+}
+
+type OpenAIAuth = OpenAIAuthApiKey | OpenAIAuthOAuth
+
 export class OpenAIAdapter extends BaseLLMClient {
-  private apiKey: string
+  private auth: OpenAIAuth
   private baseUrl = 'https://api.openai.com/v1'
 
-  constructor(apiKey: string) {
+  constructor(auth: string | OpenAIAuth) {
     super()
-    this.apiKey = apiKey
+    this.auth = typeof auth === 'string' ? { apiKey: auth } : auth
+  }
+
+  updateOAuthToken(token: string, accountId?: string): void {
+    this.auth = { oauthToken: token, accountId }
+  }
+
+  private getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+
+    if ('oauthToken' in this.auth) {
+      headers['Authorization'] = `Bearer ${this.auth.oauthToken}`
+      if (this.auth.accountId) {
+        headers['chatgpt-account-id'] = this.auth.accountId
+      }
+    } else {
+      headers['Authorization'] = `Bearer ${this.auth.apiKey}`
+    }
+
+    return headers
   }
 
   async *chat(messages: ChatMessage[], options?: ChatOptions): AsyncIterable<string> {
@@ -31,10 +63,7 @@ export class OpenAIAdapter extends BaseLLMClient {
 
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
+      headers: this.getHeaders(),
       body: JSON.stringify(body),
     })
 

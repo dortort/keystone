@@ -3,6 +3,8 @@ interface KeystoneIPC {
   onAIDone: (callback: (data: { threadId: string; messageId: string | null }) => void) => unknown
   removeAIListeners: () => void
   selectDirectory: () => Promise<string | null>
+  onOAuthStatus: (callback: (data: { state: string; provider?: string; email?: string; error?: string }) => void) => unknown
+  removeOAuthListeners: () => void
 }
 
 interface Window {
