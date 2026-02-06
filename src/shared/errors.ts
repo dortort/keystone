@@ -31,3 +31,15 @@ export class QuotaExhaustedError extends KeystoneError {
     super(`${provider} quota exhausted`, 'QUOTA_EXHAUSTED')
   }
 }
+
+export class OAuthError extends KeystoneError {
+  constructor(provider: string, message: string) {
+    super(`OAuth error (${provider}): ${message}`, 'OAUTH_ERROR')
+  }
+}
+
+export class OAuthTokenExpiredError extends KeystoneError {
+  constructor(provider: string) {
+    super(`OAuth token expired for ${provider}`, 'OAUTH_TOKEN_EXPIRED')
+  }
+}

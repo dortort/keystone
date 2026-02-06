@@ -8,4 +8,10 @@ export type {
   UsageStatus,
   ProviderType,
   ProviderConfig,
+  ProviderConfigApiKey,
+  ProviderConfigOAuth,
+  LegacyProviderConfig,
+  AuthMethod,
+  OAuthTokens,
+  OAuthFlowStatus,
 } from './provider'
