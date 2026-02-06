@@ -199,54 +199,28 @@ export class OAuthService {
       }
     }
 
-    // OpenAI-specific: extract account ID
-    if (provider === 'openai' && data.account_id) {
-      tokens.accountId = data.account_id
-    }
-
-    // OpenAI token exchange: convert ID token to API key
-    if (provider === 'openai' && capabilities.supportsTokenExchange && data.id_token) {
-      const apiKey = await this.exchangeForApiKey(capabilities, data.id_token)
-      if (apiKey) {
-        tokens.accessToken = apiKey
-      } else {
-        throw new OAuthError(provider, 'Failed to exchange token for API key. Please try again.')
+    // OpenAI-specific: extract account ID from token response or ID token
+    if (provider === 'openai') {
+      if (data.account_id) {
+        tokens.accountId = data.account_id
+      } else if (data.id_token) {
+        // Try to extract account ID from ID token claims
+        try {
+          const payload = JSON.parse(
+            Buffer.from(data.id_token.split('.')[1], 'base64url').toString(),
+          )
+          // OpenAI may include account info in various claims
+          tokens.accountId = payload.sub || payload.account_id
+        } catch {
+          // Best effort
+        }
       }
     }
+
+    // Note: We use the OAuth access_token directly for API calls.
+    // The OpenAIAdapter will include the chatgpt-account-id header when using OAuth.
 
     return tokens
-  }
-
-  private async exchangeForApiKey(
-    capabilities: { tokenUrl: string; clientId: string },
-    idToken: string,
-  ): Promise<string | null> {
-    try {
-      const body = new URLSearchParams({
-        grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
-        client_id: capabilities.clientId,
-        requested_token: 'openai-api-key',
-        subject_token: idToken,
-        subject_token_type: 'urn:ietf:params:oauth:token-type:id_token',
-      })
-
-      const response = await fetch(capabilities.tokenUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
-      })
-
-      if (!response.ok) {
-        console.error('Token exchange for API key failed:', response.status)
-        return null
-      }
-
-      const data = await response.json()
-      return data.access_token || null
-    } catch (error) {
-      console.error('Token exchange error:', error)
-      return null
-    }
   }
 
   async refreshToken(provider: ProviderType, currentTokens: OAuthTokens): Promise<OAuthTokens | null> {
@@ -275,7 +249,7 @@ export class OAuthService {
 
       const data = await response.json()
 
-      const newTokens: OAuthTokens = {
+      return {
         accessToken: data.access_token,
         refreshToken: data.refresh_token || currentTokens.refreshToken,
         idToken: data.id_token || currentTokens.idToken,
@@ -283,16 +257,6 @@ export class OAuthService {
         accountId: currentTokens.accountId,
         email: currentTokens.email,
       }
-
-      // OpenAI: re-exchange the new ID token for an API key
-      if (provider === 'openai' && capabilities.supportsTokenExchange && newTokens.idToken) {
-        const apiKey = await this.exchangeForApiKey(capabilities, newTokens.idToken)
-        if (apiKey) {
-          newTokens.accessToken = apiKey
-        }
-      }
-
-      return newTokens
     } catch (error) {
       console.error(`Token refresh error for ${provider}:`, error)
       return null

@@ -15,7 +15,6 @@ export const OAUTH_CAPABILITIES: Record<string, {
   tokenUrl: string
   scopes: string[]
   extraAuthParams?: Record<string, string>
-  supportsTokenExchange?: boolean
   experimental?: boolean
   redirectPort?: number // Fixed port for OAuth callback (required by some providers)
   callbackPath?: string // Callback path (default: /callback)
@@ -30,7 +29,6 @@ export const OAUTH_CAPABILITIES: Record<string, {
       id_token_add_organizations: 'true',
       codex_cli_simplified_flow: 'true',
     },
-    supportsTokenExchange: true,
     redirectPort: 1455,
     callbackPath: '/auth/callback',
   },
