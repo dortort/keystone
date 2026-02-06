@@ -60,10 +60,12 @@ export class OAuthService {
         }
       }
 
+      const callbackPath = capabilities.callbackPath || '/callback'
+
       const server = http.createServer(async (req, res) => {
         const url = new URL(req.url || '/', `http://127.0.0.1`)
 
-        if (url.pathname !== '/callback') {
+        if (url.pathname !== callbackPath) {
           res.writeHead(404)
           res.end('Not found')
           return
@@ -108,8 +110,9 @@ export class OAuthService {
         }
       })
 
-      // Listen on random port on loopback
-      server.listen(0, '127.0.0.1', () => {
+      // Listen on provider-specific port (or random port if not specified)
+      const listenPort = capabilities.redirectPort || 0
+      server.listen(listenPort, '127.0.0.1', () => {
         const addr = server.address()
         if (!addr || typeof addr === 'string') {
           settle(() => reject(new OAuthError(provider, 'Failed to start loopback server')))
@@ -117,7 +120,8 @@ export class OAuthService {
         }
 
         this.activeServer = server
-        redirectUri = `http://127.0.0.1:${addr.port}/callback`
+        // Use localhost (not 127.0.0.1) as some providers require it
+        redirectUri = `http://localhost:${addr.port}${callbackPath}`
 
         // Build authorization URL
         const params = new URLSearchParams({

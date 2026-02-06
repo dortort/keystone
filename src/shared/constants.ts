@@ -17,6 +17,8 @@ export const OAUTH_CAPABILITIES: Record<string, {
   extraAuthParams?: Record<string, string>
   supportsTokenExchange?: boolean
   experimental?: boolean
+  redirectPort?: number // Fixed port for OAuth callback (required by some providers)
+  callbackPath?: string // Callback path (default: /callback)
 }> = {
   openai: {
     supported: true,
@@ -29,6 +31,8 @@ export const OAUTH_CAPABILITIES: Record<string, {
       codex_cli_simplified_flow: 'true',
     },
     supportsTokenExchange: true,
+    redirectPort: 1455,
+    callbackPath: '/auth/callback',
   },
   anthropic: {
     supported: false,
