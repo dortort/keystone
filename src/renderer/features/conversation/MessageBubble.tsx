@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import type { Message } from '@shared/types'
+import { renderMarkdown } from '@/lib/markdown'
 
 interface MessageBubbleProps {
   message: Message
@@ -10,6 +12,14 @@ export function MessageBubble({ message, isStreaming, onBranch }: MessageBubbleP
   const isUser = message.role === 'user'
   const isSystem = message.role === 'system'
   const isAssistant = message.role === 'assistant'
+
+  const [renderedHtml, setRenderedHtml] = useState<string>('')
+
+  useEffect(() => {
+    if (isAssistant && message.content) {
+      renderMarkdown(message.content).then(setRenderedHtml)
+    }
+  }, [isAssistant, message.content])
 
   if (isSystem) {
     return (
@@ -26,15 +36,22 @@ export function MessageBubble({ message, isStreaming, onBranch }: MessageBubbleP
           K
         </div>
       )}
-      <div className="flex flex-col">
+      <div className="flex max-w-2xl flex-col">
         <div
-          className={`max-w-[80%] rounded-lg px-4 py-2 text-sm ${
+          className={`rounded-lg px-4 py-2 text-sm ${
             isUser
               ? 'bg-indigo-600 text-white'
               : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
           }`}
         >
-          <div className="whitespace-pre-wrap">{message.content}</div>
+          {isAssistant && renderedHtml ? (
+            <div
+              className="prose prose-sm max-w-none dark:prose-invert"
+              dangerouslySetInnerHTML={{ __html: renderedHtml }}
+            />
+          ) : (
+            <div className="whitespace-pre-wrap">{message.content}</div>
+          )}
           {isStreaming && (
             <span className="inline-block h-4 w-1 animate-pulse bg-current opacity-70" />
           )}
@@ -44,6 +61,7 @@ export function MessageBubble({ message, isStreaming, onBranch }: MessageBubbleP
             onClick={() => onBranch(message.id)}
             className="mt-1 self-start rounded px-1.5 py-0.5 text-xs text-gray-400 opacity-0 transition-opacity hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100 dark:hover:bg-gray-700 dark:hover:text-gray-300"
             title="Branch conversation from this message"
+            aria-label="Branch conversation from this message"
           >
             Branch
           </button>

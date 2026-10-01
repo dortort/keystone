@@ -15,7 +15,7 @@ export function ChatView({ messages, streamingMessageId, isStreaming, onSendMess
   return (
     <div className="flex h-full flex-col">
       <MessageList messages={messages} streamingMessageId={streamingMessageId} onBranch={onBranch} />
-      {isStreaming && !streamingMessageId && <StreamingIndicator />}
+      {isStreaming && <StreamingIndicator />}
       <MessageInput onSend={onSendMessage} disabled={isStreaming} />
     </div>
   )
